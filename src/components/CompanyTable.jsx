@@ -1,0 +1,154 @@
+import { useState } from "react";
+import CompanyModal from "./AddCompanyModal";
+import UploadContextModal from "./UploadContextModal"; // assuming you have this
+import api from "../services/api";
+import { toast } from "react-toastify";
+
+const CompanyTable = ({ companies, refresh }) => {
+  const [selectedCompany, setSelectedCompany] = useState(null);
+
+  const handleCreateChatbot = async (companyId, name) => {
+    try {
+      const token = localStorage.getItem("adminToken");
+
+      const response = await api.post(
+        "/chatbot/create",
+        { companyId, name }, // ✅ match backend requirement
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+
+      toast.success("Chatbot created ✅")
+      console.log("Chatbot created:", response.data);
+      refresh();
+    } catch (error) {
+      console.error(
+        "Error creating chatbot:",
+        error.response?.data || error.message
+      );
+      toast.error(error.response?.data?.message || "Failed to create chatbot.")
+    //   alert(error.response?.data?.message || "Failed to create chatbot.");
+    }
+  };
+
+  const handleDeleteChatbot = async (chatbotId) => {
+    if (!window.confirm("Are you sure you want to delete this chatbot?"))
+      return;
+
+    try {
+      const token = localStorage.getItem("adminToken");
+      await api.delete(`/chatbot/delete/${chatbotId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      toast.success("Chatbot deleted");
+      refresh();
+    } catch (error) {
+      console.error("Error deleting chatbot:", error);
+      toast.error("Failed to delete chatbot.")
+    //   alert("Failed to delete chatbot.");
+    }
+  };
+
+  const handleDeleteCompany = async (companyId) => {
+    if (
+      !window.confirm(
+        "This will delete the company and all its chatbots. Continue?"
+      )
+    )
+      return;
+
+    try {
+      const token = localStorage.getItem("adminToken");
+      await api.delete(`/company/delete/${companyId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      toast.success("Company deleted");
+      refresh();
+    } catch (error) {
+      console.error("Error deleting company:", error);
+      toast.error("Failed to delete company.");
+    }
+  };
+
+  return (
+    <div className="overflow-x-auto rounded-lg border border-gray-700">
+      <table className="w-full text-sm text-left text-gray-300 border-separate border-spacing-y-2">
+        <thead className="bg-[#1a1c1f] text-gray-400 text-sm">
+          <tr>
+            <th className="p-3">Name</th>
+            <th className="p-3">Domain</th>
+            <th className="p-3">Upload</th>
+            <th className="p-3">Del Chatbot</th>
+            <th className="p-3">Del Company</th>
+          </tr>
+        </thead>
+        <tbody>
+          {companies.map((company) => (
+            <tr
+              key={company.id}
+              className="bg-[#1f2227] rounded-md shadow-sm hover:shadow-md transition-shadow"
+            >
+              <td className="p-3">{company.name}</td>
+              <td className="p-3">{company.url}</td>
+
+              <td className="p-3">
+                {company.chatbots?.length > 0 ? (
+                  <UploadContextModal chatbotId={company.chatbots[0].id} />
+                ) : (
+                  "-"
+                )}
+              </td>
+
+              <td className="p-3">
+                {company.chatbots?.length > 0 ? (
+                  <button
+                    onClick={() => handleDeleteChatbot(company.chatbots[0].id)}
+                    className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
+                  >
+                    Delete Chatbot
+                  </button>
+                ) : (
+                  <button
+                    onClick={() =>
+                      handleCreateChatbot(company.id, company.name, company.url)
+                    }
+                    className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
+                  >
+                    Create Chatbot
+                  </button>
+                )}
+              </td>
+
+              <td className="p-3">
+                <button
+                  onClick={() => handleDeleteCompany(company.id)}
+                  className="bg-gray-600 text-white px-3 py-1 rounded hover:bg-gray-700"
+                >
+                  Delete Company
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {selectedCompany && (
+        <CompanyModal
+          company={selectedCompany}
+          onClose={() => setSelectedCompany(null)}
+          refresh={refresh}
+        />
+      )}
+    </div>
+  );
+};
+
+export default CompanyTable;
