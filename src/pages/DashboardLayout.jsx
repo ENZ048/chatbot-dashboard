@@ -11,14 +11,14 @@ const DashboardLayout = () => {
     const token = localStorage.getItem("adminToken");
 
     if (!isAdmin || !token) {
-      navigate("/login", { replace: true });
+      navigate("/", { replace: true });
     }
   }, [navigate]);
 
   return (
-    <div className="flex bg-[#0e1013] min-h-screen text-white">
+    <div className="bg-[#0e1013] min-h-screen text-white">
       <Sidebar />
-      <main className="flex-1 p-6 bg-[#121417] rounded-xl mx-4 my-6 shadow-lg border border-gray-800">
+      <main className="ml-64 p-6 bg-[#121417] min-h-screen overflow-y-auto">
         <Outlet />
       </main>
     </div>

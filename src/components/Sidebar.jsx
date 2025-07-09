@@ -18,7 +18,7 @@ const Sidebar = () => {
     }`;
 
   return (
-    <aside className="h-screen w-64 bg-[#1a1c1f] border-r border-gray-700 p-4 hidden md:flex flex-col justify-between">
+    <aside className="h-screen fixed w-64 bg-[#1a1c1f] border-r border-gray-700 p-4 hidden md:flex flex-col justify-between">
       <div>
         <h2 className="text-2xl font-bold text-white mb-6 text-center tracking-wide">
           Troika Tech
