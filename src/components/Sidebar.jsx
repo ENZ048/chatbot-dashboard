@@ -36,7 +36,7 @@ const Sidebar = () => {
             <Bot className="mr-2 h-5 w-5" /> Manage Chatbots
           </NavLink>
 
-          <NavLink to="/admin/dashboard/add-admin" className={navItemClass}>
+          <NavLink to="/dashboard/add-admin" className={navItemClass}>
             <UserPlus className="mr-2 h-5 w-5" /> Add Admin
           </NavLink>
         </nav>

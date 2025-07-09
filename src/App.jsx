@@ -6,6 +6,7 @@ import DashboardLayout from "./pages/DashboardLayout";
 import OverviewPage from "./pages/OverviewPage";
 import CompaniesPage from "./pages/CompaniesPage";
 import ChatbotPage from "./pages/ChatbotPage";
+import AddAdminPage from "./pages/AddAdminPage";
 
 function App() {
   return (
@@ -19,11 +20,11 @@ function App() {
           <Route path="overview" element={<OverviewPage />} />
           <Route path="companies" element={<CompaniesPage />} />
           <Route path="chatbots" element={<ChatbotPage/>} />
-          {/* <Route path="search" element={<SearchPage />} /> */}
+          <Route path="add-admin" element={<AddAdminPage />} />
         </Route>
 
 
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>
   );

@@ -119,7 +119,7 @@ const LoginPage = () => {
         </form>
 
         <div className="mt-6 text-center text-sm text-gray-500">
-          &copy; {new Date().getFullYear()} Troika Technologies. All rights reserved.
+          &copy; {new Date().getFullYear()} Troika Tech. All rights reserved.
         </div>
       </div>
     </div>

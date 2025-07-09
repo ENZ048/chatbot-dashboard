@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../services/api";
 import MessageHistory from "../components/MessageHistory";
 import ClipLoader from "react-spinners/ClipLoader";
+import UploadContextModal from "../components/UploadContextModal";
 
 const ManageChatbotsPage = () => {
   const [chatbots, setChatbots] = useState([]);
@@ -11,6 +12,7 @@ const ManageChatbotsPage = () => {
   const [editingId, setEditingId] = useState(null);
   const [newLimit, setNewLimit] = useState("");
   const [loading, setLoading] = useState(true);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const fetchChatbots = async () => {
     try {
@@ -51,6 +53,30 @@ const ManageChatbotsPage = () => {
       setNewLimit("");
     } catch (err) {
       console.error("Failed to update token limit:", err);
+    }
+  };
+
+  const handleDownloadReport = async (chatbotId) => {
+    try {
+      setIsDownloading(true);
+      const token = localStorage.getItem("adminToken");
+      const response = await api.get(`/report/download/${chatbotId}`, {
+        responseType: "blob", // important for PDF or file download
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `${chatbotId}-report.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      console.error("Failed to download report:", err);
+      alert("❌ Failed to download report. Try again.");
+    }finally{
+      setIsDownloading(false);
     }
   };
 
@@ -95,13 +121,10 @@ const ManageChatbotsPage = () => {
                 <p className="text-sm text-gray-400">
                   Domain: {cb.company_url}
                 </p>
+                <p className="text-sm text-gray-400">ID: {cb.id}</p>
               </div>
               <div>
-                <input
-                  type="file"
-                  accept=".txt,.pdf,.docx"
-                  className="text-sm text-gray-400"
-                />
+                <UploadContextModal chatbotId={cb.id} />
               </div>
             </div>
 
@@ -110,28 +133,28 @@ const ManageChatbotsPage = () => {
                 <p className="text-sm text-gray-400">
                   📊 Token Usage (Monthly)
                 </p>
-                <p className="text-base font-semibold text-white">
+                <p className="text-2xl mt-2 font-semibold text-white">
                   {cb.used_tokens || 0}
                 </p>
               </div>
 
               <div>
                 <p className="text-sm text-gray-400">💬 Total Messages</p>
-                <p className="text-base font-semibold text-white">
+                <p className="text-2xl mt-2 font-semibold text-white">
                   {cb.total_messages || 0}
                 </p>
               </div>
 
               <div>
                 <p className="text-sm text-gray-400">👥 Unique Users</p>
-                <p className="text-base font-semibold text-white">
+                <p className="text-2xl mt-2 font-semibold text-white">
                   {cb.unique_users || 0}
                 </p>
               </div>
 
               <div>
                 <p className="text-sm text-gray-400">🔋 Remaining Tokens</p>
-                <p className="text-base font-semibold text-white">
+                <p className="text-2xl mt-2 font-semibold text-white">
                   {cb.token_limit != null && cb.used_tokens != null
                     ? Math.max(cb.token_limit - cb.used_tokens, 0)
                     : "Unlimited"}
@@ -146,7 +169,7 @@ const ManageChatbotsPage = () => {
                       type="number"
                       value={newLimit}
                       onChange={(e) => setNewLimit(e.target.value)}
-                      className="w-24 px-2 py-1 rounded"
+                      className="w-24 text-2xl mt-2 px-2 py-1 rounded"
                     />
                     <button
                       onClick={() => updateTokenLimit(cb.id, newLimit)}
@@ -166,7 +189,7 @@ const ManageChatbotsPage = () => {
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <span className="text-base font-semibold text-white">
+                    <span className="text-2xl mt-2 font-semibold text-white">
                       {cb.token_limit || "Unlimited"}
                     </span>
                     <button
@@ -184,7 +207,7 @@ const ManageChatbotsPage = () => {
               </div>
             </div>
 
-            <div className="mt-6 flex justify-end">
+            <div className="mt-4 flex gap-4 justify-end">
               <button
                 onClick={() => {
                   setSelected(cb);
@@ -193,6 +216,44 @@ const ManageChatbotsPage = () => {
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow"
               >
                 View Message History
+              </button>
+
+              <button
+               onClick={() => handleDownloadReport(cb.id)}
+                disabled={isDownloading}
+                className={`w-1/4 cursor-pointer bg-gradient-to-r from-blue-600 to-teal-500 text-white py-2.5 rounded-lg font-semibold transition-all shadow-md hover:shadow-lg ${
+                  isDownloading
+                    ? "opacity-60 cursor-not-allowed"
+                    : "hover:from-blue-500 hover:to-teal-400"
+                }`}
+              >
+                {isDownloading ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <svg
+                      className="animate-spin h-5 w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                      ></path>
+                    </svg>
+                    Downloading report...
+                  </div>
+                ) : (
+                  "Download Report"
+                )}
               </button>
             </div>
           </div>
