@@ -13,6 +13,10 @@ const ManageChatbotsPage = () => {
   const [newLimit, setNewLimit] = useState("");
   const [loading, setLoading] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [renewing, setRenewing] = useState(null);
+  const [subscriptions, setSubscriptions] = useState({});
+  const [selectedPlan, setSelectedPlan] = useState("1");
+  const [availablePlans, setAvailablePlans] = useState([]);
 
   const fetchChatbots = async () => {
     try {
@@ -30,9 +34,75 @@ const ManageChatbotsPage = () => {
     }
   };
 
+  const fetchPlans = async () => {
+    try {
+      const token = localStorage.getItem("adminToken");
+      const res = await api.get("/plans", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setAvailablePlans(res.data.plans || []);
+    } catch (err) {
+      console.error("Failed to fetch plans:", err);
+    }
+  };
+
   useEffect(() => {
     fetchChatbots();
+    fetchPlans();
   }, []);
+
+  const handleRenew = async (id) => {
+    const token = localStorage.getItem("adminToken");
+
+    // Find the selected plan from availablePlans array
+    const planDetails = availablePlans.find((p) => p.id === selectedPlan);
+    const durationDays = planDetails?.duration_days || 30; // fallback
+
+    const months = Math.ceil(durationDays / 30); // convert days to months (approx)
+
+    if (!selectedPlan) {
+      alert("Please select a plan.");
+      return;
+    }
+
+    try {
+      await api.post(
+        `/chatbot/${id}/renew`,
+        {
+          plan_id: selectedPlan,
+          months,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      alert("✅ Plan renewed successfully");
+      fetchSubscription(id);
+      setRenewing(null);
+    } catch (err) {
+      console.error("Renewal error:", err);
+      alert("❌ Renewal failed");
+    }
+  };
+
+  const fetchSubscription = async (id) => {
+    try {
+      const token = localStorage.getItem("adminToken");
+      const res = await api.get(`/chatbot/${id}/subscription`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setSubscriptions((prev) => ({ ...prev, [id]: res.data.subscription }));
+    } catch (err) {
+      console.error("Failed to fetch subscription:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (chatbots.length > 0) {
+      chatbots.forEach((cb) => fetchSubscription(cb.id));
+    }
+  }, [chatbots]);
 
   const filtered = chatbots.filter((cb) =>
     cb.name.toLowerCase().includes(search.toLowerCase())
@@ -75,7 +145,7 @@ const ManageChatbotsPage = () => {
     } catch (err) {
       console.error("Failed to download report:", err);
       alert("❌ Failed to download report. Try again.");
-    }finally{
+    } finally {
       setIsDownloading(false);
     }
   };
@@ -161,6 +231,39 @@ const ManageChatbotsPage = () => {
                 </p>
               </div>
 
+              {subscriptions[cb.id] && subscriptions[cb.id].plans ? (
+                <div className="bg-[#25272c] p-4 rounded-xl col-span-full">
+                  <p className="text-sm text-gray-400 font-semibold mb-1">
+                    📦 Plan Details:
+                  </p>
+                  <ul className="text-sm text-gray-300 space-y-1">
+                    <li>🔖 Name: {subscriptions[cb.id].plans.name}</li>
+                    <li>
+                      📅 Duration: {subscriptions[cb.id].plans.duration_days}{" "}
+                      days
+                    </li>
+                    <li>
+                      👥 Max Users: {subscriptions[cb.id].plans.max_users}
+                    </li>
+                    <li>💰 Price: ₹{subscriptions[cb.id].plans.price}</li>
+                    <li>
+                      ⏳ Expires:{" "}
+                      {new Date(
+                        subscriptions[cb.id].end_date
+                      ).toLocaleDateString()}
+                    </li>
+                    <li>
+                      👥 Users Used: {cb.unique_users} /{" "}
+                      {subscriptions[cb.id].plans.max_users}
+                    </li>
+                  </ul>
+                </div>
+              ) : (
+                <p className="text-sm text-yellow-400 col-span-full">
+                  No active plan
+                </p>
+              )}
+
               <div>
                 <p className="text-sm text-gray-400">📦 Total Token Limit</p>
                 {editingId === cb.id ? (
@@ -219,7 +322,7 @@ const ManageChatbotsPage = () => {
               </button>
 
               <button
-               onClick={() => handleDownloadReport(cb.id)}
+                onClick={() => handleDownloadReport(cb.id)}
                 disabled={isDownloading}
                 className={`w-1/4 cursor-pointer bg-gradient-to-r from-blue-600 to-teal-500 text-white py-2.5 rounded-lg font-semibold transition-all shadow-md hover:shadow-lg ${
                   isDownloading
@@ -255,10 +358,59 @@ const ManageChatbotsPage = () => {
                   "Download Report"
                 )}
               </button>
+
+              <button
+                onClick={() => setRenewing(cb.id)}
+                className="text-sm px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg"
+              >
+                Renew Plan
+              </button>
             </div>
           </div>
         ))}
       </div>
+
+      {renewing && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+          <div className="bg-[#1e1e1e] p-6 rounded-lg w-[400px] relative">
+            {/* ❌ Close button */}
+            <button
+              onClick={() => setRenewing(null)}
+              className="absolute top-2 right-2 text-gray-400 hover:text-white text-2xl font-bold focus:outline-none"
+              title="Close"
+            >
+              &times;
+            </button>
+
+            <h3 className="text-lg font-semibold text-white mb-4">
+              Renew Plan
+            </h3>
+
+            <select
+              value={selectedPlan}
+              onChange={(e) => setSelectedPlan(e.target.value)}
+              className="w-full p-2 rounded mb-4 bg-[#2b2d31] text-white"
+            >
+              <option disabled value="">
+                Select a plan
+              </option>
+              {availablePlans.map((plan) => (
+                <option key={plan.id} value={plan.id}>
+                  {plan.name} – ₹{plan.price} for {plan.duration_days} days (
+                  {plan.max_users} users)
+                </option>
+              ))}
+            </select>
+
+            <button
+              onClick={() => handleRenew(renewing)}
+              className="bg-blue-600 text-white px-4 py-2 rounded"
+            >
+              Confirm Renew
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Modal */}
       {showModal && selected && (
