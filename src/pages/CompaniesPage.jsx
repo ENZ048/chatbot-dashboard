@@ -17,7 +17,6 @@ const CompaniesPage = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // ✅ If the response is like { companies: [...] }
       setCompanies(res.data.companies);
     } catch (err) {
       console.error("Failed to fetch companies:", err);
@@ -43,21 +42,21 @@ const CompaniesPage = () => {
   }
 
   if (!companies) {
-    return <p className="text-red-400">Failed to load Companies.</p>;
+    return <p className="text-red-500">Failed to load companies.</p>;
   }
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-4">
+    <div className="p-4 bg-white rounded-xl shadow-md">
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
         <input
-          className="px-4 py-2 bg-[#1a1c1f] border border-gray-600 rounded-lg text-white w-full max-w-sm"
+          className="w-full md:max-w-sm px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
           placeholder="Search companies..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
         <button
           onClick={() => setShowAddModal(true)}
-          className="ml-4 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-medium"
+          className="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-lg font-medium transition"
         >
           + Add Company
         </button>

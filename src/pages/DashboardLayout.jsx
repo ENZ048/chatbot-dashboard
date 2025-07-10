@@ -16,9 +16,9 @@ const DashboardLayout = () => {
   }, [navigate]);
 
   return (
-    <div className="bg-[#0e1013] min-h-screen text-white">
+    <div className="bg-gray-100 min-h-screen text-gray-800">
       <Sidebar />
-      <main className="ml-64 p-6 bg-[#121417] min-h-screen overflow-y-auto">
+      <main className="ml-64 p-6 bg-white min-h-screen overflow-y-auto">
         <Outlet />
       </main>
     </div>

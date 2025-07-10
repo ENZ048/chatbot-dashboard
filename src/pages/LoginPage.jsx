@@ -37,43 +37,43 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0e1013] flex items-center justify-center px-4">
-      <div className="w-full max-w-md bg-[#1a1c1f] text-white rounded-2xl shadow-lg p-8 relative border border-gray-700">
+    <div className="min-h-screen bg-gradient-to-br from-white to-blue-50 flex items-center justify-center px-4">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 border border-gray-200">
         <div className="text-center mb-6">
-          <h1 className="text-4xl font-extrabold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-300">
+          <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-teal-500">
             Troika Tech
           </h1>
-          <p className="text-gray-400 mt-1">Chatbot Management Dashboard</p>
+          <p className="text-gray-600 mt-2 text-sm">Chatbot Management Dashboard</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-5">
           <div>
-            <label className="block mb-1 text-sm font-medium text-gray-300">Email</label>
+            <label className="block mb-1 text-sm font-medium text-gray-700">Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-2 bg-[#121417] border border-gray-600 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 transition"
-              placeholder="admin@troka.ai"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+              placeholder="admin@troika.ai"
             />
           </div>
 
           <div>
-            <label className="block mb-1 text-sm font-medium text-gray-300">Password</label>
+            <label className="block mb-1 text-sm font-medium text-gray-700">Password</label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-2 bg-[#121417] border border-gray-600 rounded-lg pr-10 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 transition"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm pr-10 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
                 placeholder="••••••••"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute cursor-pointer inset-y-0 right-3 flex items-center text-gray-400 hover:text-white focus:outline-none"
+                className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-800"
                 tabIndex={-1}
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -84,8 +84,10 @@ const LoginPage = () => {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full cursor-pointer bg-gradient-to-r from-blue-600 to-teal-500 text-white py-2.5 rounded-lg font-semibold transition-all shadow-md hover:shadow-lg ${
-              loading ? "opacity-60 cursor-not-allowed" : "hover:from-blue-500 hover:to-teal-400"
+            className={`w-full cursor-pointer bg-gradient-to-r from-blue-600 to-teal-500 text-white py-2.5 rounded-lg font-semibold shadow-md transition-all ${
+              loading
+                ? "opacity-60 cursor-not-allowed"
+                : "hover:from-blue-500 hover:to-teal-400"
             }`}
           >
             {loading ? (
@@ -118,8 +120,8 @@ const LoginPage = () => {
           </button>
         </form>
 
-        <div className="mt-6 text-center text-sm text-gray-500">
-          &copy; {new Date().getFullYear()} Troika Tech. All rights reserved.
+        <div className="mt-6 text-center text-sm text-gray-400">
+          &copy; {new Date().getFullYear()} <span className="text-gray-600 font-medium">Troika Tech</span>. All rights reserved.
         </div>
       </div>
     </div>

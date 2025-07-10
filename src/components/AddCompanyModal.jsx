@@ -13,19 +13,16 @@ const AddCompanyModal = ({ onClose, onSuccess }) => {
       const token = localStorage.getItem("adminToken");
       await api.post(
         "/company/create",
-        {
-          name,
-          url,
-        },
+        { name, url },
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      toast.success("Company Added");
+      toast.success("Company added successfully.");
       onSuccess();
       onClose();
     } catch (err) {
-      toast.error(`${err.response.data.message}`);
+      toast.error(err?.response?.data?.message || "Failed to add company.");
       console.error("Failed to add company:", err);
     } finally {
       setLoading(false);
@@ -33,26 +30,29 @@ const AddCompanyModal = ({ onClose, onSuccess }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-[#1a1c1f] p-6 rounded-lg border border-gray-700 w-full max-w-md">
-        <h2 className="text-xl font-semibold mb-4 text-white">Add Company</h2>
+    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+      <div className="bg-white p-6 rounded-xl border border-gray-200 w-full max-w-md shadow-xl">
+        <h2 className="text-xl font-bold mb-4 text-gray-800">Add Company</h2>
+
         <input
-          className="w-full mb-3 px-4 py-2 bg-[#121417] border border-gray-600 rounded text-white"
+          className="w-full mb-3 px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="Company Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
+
         <input
-          className="w-full mb-4 px-4 py-2 bg-[#121417] border border-gray-600 rounded text-white"
+          className="w-full mb-4 px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="Domain"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
         />
+
         <div className="flex justify-end space-x-3">
           <button
             onClick={handleAdd}
             disabled={loading}
-            className={`w-1/4 cursor-pointer bg-gradient-to-r from-blue-600 to-teal-500 text-white py-2.5 rounded-lg font-semibold transition-all shadow-md hover:shadow-lg ${
+            className={`px-5 py-2 bg-gradient-to-r from-blue-600 to-teal-500 text-white rounded-lg font-semibold shadow-md transition-all ${
               loading
                 ? "opacity-60 cursor-not-allowed"
                 : "hover:from-blue-500 hover:to-teal-400"
@@ -87,7 +87,10 @@ const AddCompanyModal = ({ onClose, onSuccess }) => {
             )}
           </button>
 
-          <button onClick={onClose} className="text-gray-400 hover:underline">
+          <button
+            onClick={onClose}
+            className="text-gray-600 hover:text-gray-800 font-medium"
+          >
             Cancel
           </button>
         </div>
