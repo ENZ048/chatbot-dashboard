@@ -3,12 +3,19 @@ import api from "../services/api";
 import MessageHistory from "../components/MessageHistory";
 import ClipLoader from "react-spinners/ClipLoader";
 import UploadContextModal from "../components/UploadContextModal";
+import EditClientConfigModal from "../components/EditClientConfigModal";
+
+const MODAL_TYPES = {
+  NONE: null,
+  MESSAGE_HISTORY: "message_history",
+  CONFIG: "config",
+};
 
 const ManageChatbotsPage = () => {
   const [chatbots, setChatbots] = useState([]);
   const [selected, setSelected] = useState(null);
   const [search, setSearch] = useState("");
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState(MODAL_TYPES.NONE);
   const [editingId, setEditingId] = useState(null);
   const [newLimit, setNewLimit] = useState("");
   const [loading, setLoading] = useState(true);
@@ -173,15 +180,22 @@ const ManageChatbotsPage = () => {
             <div className="flex justify-between items-start">
               <div>
                 <h3 className="text-xl font-semibold">{cb.name}</h3>
-                <p className="text-sm text-gray-500">Company: {cb.company_name}</p>
-                <p className="text-sm text-gray-500">Domain: {cb.company_url}</p>
+                <p className="text-sm text-gray-500">
+                  Company: {cb.company_name}
+                </p>
+                <p className="text-sm text-gray-500">
+                  Domain: {cb.company_url}
+                </p>
                 <p className="text-sm text-gray-400">ID: {cb.id}</p>
               </div>
               <UploadContextModal chatbotId={cb.id} />
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-6">
-              <Stat label="📊 Token Usage (Monthly)" value={cb.used_tokens || 0} />
+              <Stat
+                label="📊 Token Usage (Monthly)"
+                value={cb.used_tokens || 0}
+              />
               <Stat label="💬 Total Messages" value={cb.total_messages || 0} />
               <Stat label="👥 Unique Users" value={cb.unique_users || 0} />
               <Stat
@@ -196,15 +210,24 @@ const ManageChatbotsPage = () => {
               <div className="col-span-full">
                 {subscriptions[cb.id]?.plans ? (
                   <div className="bg-gray-100 border border-gray-300 p-4 rounded-lg">
-                    <p className="text-sm font-semibold mb-1">📦 Plan Details:</p>
+                    <p className="text-sm font-semibold mb-1">
+                      📦 Plan Details:
+                    </p>
                     <ul className="text-sm text-gray-700 space-y-1">
                       <li>🔖 Name: {subscriptions[cb.id].plans.name}</li>
-                      <li>📅 Duration: {subscriptions[cb.id].plans.duration_days} days</li>
-                      <li>👥 Max Users: {subscriptions[cb.id].plans.max_users}</li>
+                      <li>
+                        📅 Duration: {subscriptions[cb.id].plans.duration_days}{" "}
+                        days
+                      </li>
+                      <li>
+                        👥 Max Users: {subscriptions[cb.id].plans.max_users}
+                      </li>
                       <li>💰 Price: ₹{subscriptions[cb.id].plans.price}</li>
                       <li>
                         ⏳ Expires:{" "}
-                        {new Date(subscriptions[cb.id].end_date).toLocaleDateString()}
+                        {new Date(
+                          subscriptions[cb.id].end_date
+                        ).toLocaleDateString()}
                       </li>
                       <li>
                         👥 Users Used: {cb.unique_users} /{" "}
@@ -213,7 +236,9 @@ const ManageChatbotsPage = () => {
                     </ul>
                   </div>
                 ) : (
-                  <p className="text-sm text-yellow-600 font-medium">No active plan</p>
+                  <p className="text-sm text-yellow-600 font-medium">
+                    No active plan
+                  </p>
                 )}
               </div>
 
@@ -267,7 +292,7 @@ const ManageChatbotsPage = () => {
               <button
                 onClick={() => {
                   setSelected(cb);
-                  setShowModal(true);
+                  setShowModal(MODAL_TYPES.MESSAGE_HISTORY);
                 }}
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
               >
@@ -288,6 +313,16 @@ const ManageChatbotsPage = () => {
               >
                 Renew Plan
               </button>
+
+              <button
+                onClick={() => {
+                  setSelected(cb);
+                  setShowModal(MODAL_TYPES.CONFIG);
+                }}
+                className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg"
+              >
+                Edit Config
+              </button>
             </div>
           </div>
         ))}
@@ -303,7 +338,9 @@ const ManageChatbotsPage = () => {
             >
               &times;
             </button>
-            <h3 className="text-xl font-semibold mb-4 text-gray-800">Renew Plan</h3>
+            <h3 className="text-xl font-semibold mb-4 text-gray-800">
+              Renew Plan
+            </h3>
             <select
               value={selectedPlan}
               onChange={(e) => setSelectedPlan(e.target.value)}
@@ -314,7 +351,8 @@ const ManageChatbotsPage = () => {
               </option>
               {availablePlans.map((plan) => (
                 <option key={plan.id} value={plan.id}>
-                  {plan.name} – ₹{plan.price} / {plan.duration_days} days ({plan.max_users} users)
+                  {plan.name} – ₹{plan.price} / {plan.duration_days} days (
+                  {plan.max_users} users)
                 </option>
               ))}
             </select>
@@ -328,7 +366,7 @@ const ManageChatbotsPage = () => {
         </div>
       )}
 
-      {showModal && selected && (
+      {showModal === MODAL_TYPES.MESSAGE_HISTORY && selected && (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
           <div className="bg-white w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-xl p-8 relative shadow-xl">
             <h3 className="text-2xl font-bold mb-4 text-gray-800">
@@ -338,7 +376,7 @@ const ManageChatbotsPage = () => {
             <div className="flex justify-end mt-6">
               <button
                 onClick={() => {
-                  setShowModal(false);
+                  setShowModal(MODAL_TYPES.NONE);
                   setSelected(null);
                 }}
                 className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
@@ -348,6 +386,16 @@ const ManageChatbotsPage = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {showModal === MODAL_TYPES.CONFIG && selected && (
+        <EditClientConfigModal
+          chatbot={selected}
+          onClose={() => {
+            setShowModal(MODAL_TYPES.NONE);
+            setSelected(null);
+          }}
+        />
       )}
     </div>
   );
